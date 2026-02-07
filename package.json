@@ -1,0 +1,53 @@
+{
+  "name": "psfdb",
+  "version": "1.0.0",
+  "description": "Model-independent lightweight semantic search system. Supports both text (Japanese/English) and JSON.",
+  "main": "psfdb.js",
+  "types": "psfdb.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "search",
+    "semantic",
+    "fingerprint",
+    "embedding",
+    "vector",
+    "similarity",
+    "minhash",
+    "simhash",
+    "offline",
+    "client-side",
+    "javascript",
+    "json",
+    "indexeddb"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nishlumi/psfdb"
+  },
+  "bugs": {
+    "url": "https://github.com/nishlumi/psfdb/issues"
+  },
+  "homepage": "https://github.com/nishlumi/psfdb#readme",
+  "files": [
+    "psfdb.js",
+    "psfdb.d.ts",
+    "examples.js",
+    "demo.html",
+    "README.ja.md",
+    "README.md",
+    "QUICKSTART.ja.md",
+    "QUICKSTART.md"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browser": {
+    "psfdb.js": "./psfdb.js"
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}
