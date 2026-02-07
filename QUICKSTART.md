@@ -6,7 +6,7 @@ Get started with Progressive Semantic Fingerprinting in 5 minutes.
 
 ### Browser Environment (Script Tag)
 
-Add the following to your HTML file. Note that `psfdb-sf.js` must be loaded **first**.
+Add the following to your HTML file.
 
 ```html
 <script src="psfdb.js"></script>
@@ -196,43 +196,43 @@ For detailed usage, refer to:
 
 ## Troubleshooting
 
-### If IndexedDB is unavailable
+### If IndexedDB is unavailable (Memory Mode)
+
+You can use memory mode with `persist: false` option:
 
 ```javascript
-// Operate in memory only (no persistence)
-const fingerprints = [];
+// Memory mode (no persistence)
+const db = new PsfDB('test', 1, { persist: false });
+await db.initialize();
 
-async function search(query) {
-  const queryFp = new SemanticFingerprint(query);
-  
-  return fingerprints
-    .map(fp => ({
-      similarity: queryFp.similarity(fp.fingerprint),
-      data: fp.data
-    }))
-    .filter(r => r.similarity > 0.3)
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 10);
-}
+// Use as normal
+await db.add('Data 1');
+await db.add('Data 2');
+const results = await db.search('Data');
+
+// Data is lost when page is reloaded
 ```
+
+**Notes:**
+- Data is lost when the page is reloaded or closed
+- Useful in Service Worker environments where IndexedDB is unavailable
+- Be mindful of memory usage with large datasets
 
 ### Browser storage limit
 
 ```javascript
-// Automatically delete old data
-async function cleanupOldData(db, maxAge) {
-  const cutoff = Date.now() - maxAge;
-  const all = await db.getAll();
-  
-  for (const record of all) {
-    if (new Date(record.createdAt) < cutoff) {
-      await db.delete(record.id);
-    }
-  }
-}
-
 // Delete data older than 1 week
-await cleanupOldData(db, 7 * 24 * 60 * 60 * 1000);
+const count = await db.deleteOlderThan(7 * 24 * 60 * 60 * 1000);
+console.log(`Deleted ${count} records`);
+
+// Bulk delete data matching a condition
+await db.deleteWhere(record => record.dataType === 'text');
+
+// Delete with compound conditions
+const cutoff = new Date(Date.now() - 86400000); // 1 day ago
+await db.deleteWhere(record => 
+    new Date(record.createdAt) < cutoff && record.dataType === 'json'
+);
 ```
 
 ## Support

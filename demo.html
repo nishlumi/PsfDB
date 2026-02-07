@@ -207,83 +207,76 @@
 
 <body>
     <div class="container">
-        <h1>Progressive Semantic Fingerprinting</h1>
+        <h1>Progressive Semantic Fingerprinting DB (PsfDB)</h1>
         <p class="subtitle">
-            モデル非依存・JS完結の多層意味指紋検索エンジン v1.1.0
+            A lightweight search system that adopts Progressive Semantic Fingerprinting
         </p>
 
-        <!-- Download -->
-        <div class="card">
-            <h2>ダウンロード</h2>
-            <div class="btn-row">
-                <button class="download" onclick="downloadFile('psfdb.js')">psfdb.js</button>
-            </div>
-        </div>
 
         <!-- Demo: Text Search -->
         <div class="card">
-            <h2>テキスト検索デモ</h2>
+            <h2>Text Search Demo</h2>
             <div class="form-group">
-                <label>サンプルデータ登録</label>
+                <label>Sample Data Registration</label>
                 <button class="primary" onclick="loadTextSamples()">
-                    サンプルデータ投入
+                    Sample Data Registration
                 </button>
-                <button onclick="clearDB()">DB クリア</button>
+                <button onclick="clearDB()">DB Clear</button>
                 <br />
                 <textarea id="inputdata" rows="3" cols="35"></textarea>
                 <button class="primary" onclick="loadTextSamples2()">
-                    データ投入
+                    Add Data
                 </button>
             </div>
             <div class="form-group">
-                <label>検索クエリ</label>
-                <input type="text" id="textQuery" placeholder="例: マンション管理組合の修繕計画" />
+                <label>Search Query</label>
+                <input type="text" id="textQuery" placeholder="Example: human psychology" />
             </div>
             <div class="btn-row">
-                <button class="primary" onclick="searchText()">検索</button>
+                <button class="primary" onclick="searchText()">Search</button>
             </div>
             <div class="stats" id="dbStats"></div>
             <div class="output" id="textOutput">
-                結果がここに表示されます
+                Results will be displayed here
             </div>
         </div>
 
         <!-- Demo: JSON Search -->
         <div class="card">
-            <h2>JSON 検索デモ</h2>
+            <h2>JSON Search Demo</h2>
             <div class="form-group">
-                <label>サンプルJSON登録</label>
+                <label>Sample JSON Registration</label>
                 <button class="primary" onclick="loadJsonSamples()">
-                    JSONサンプル投入
+                    Sample JSON Registration
                 </button>
                 <br />
                 <textarea id="inputjson" rows="3" cols="35"></textarea>
                 <button class="primary" onclick="loadJSONSamples2()">
-                    データ投入
+                    Add Data
                 </button>
             </div>
             <div class="form-group">
-                <label>JSON検索クエリ</label>
+                <label>JSON Search Query</label>
                 <textarea id="jsonQuery" rows="3" placeholder='{"name": "wireless", "price": 50}'></textarea>
             </div>
             <div class="btn-row">
                 <button class="primary" onclick="searchJson()">
-                    JSON検索
+                    JSON Search
                 </button>
             </div>
             <div class="output" id="jsonOutput">
-                結果がここに表示されます
+                Results will be displayed here
             </div>
         </div>
 
         <!-- Unit Test -->
         <div class="card">
-            <h2>テスト</h2>
+            <h2>Unit Test</h2>
             <button class="primary" onclick="runTests()">
-                全テスト実行
+                Run All Tests
             </button>
             <div class="output" id="testOutput" style="margin-top: 1rem">
-                テスト結果がここに表示されます
+                Test results will be displayed here
             </div>
         </div>
     </div>
@@ -304,70 +297,191 @@
 
         // ---- サンプルデータ ----
         const textSamples = [
-            "マンション管理組合は修繕積立金の値上げを検討している",
-            "大規模修繕工事の実施時期について理事会で議論された",
-            "管理費の滞納者に対する督促手続きを進める必要がある",
-            "防火管理者の選任届を消防署に提出しなければならない",
-            "共用部分のエレベーター保守点検契約を更新する",
-            "The building management association discussed renovation reserves",
-            "マンションの耐震診断を実施して補強工事を計画する",
-            "長期修繕計画の見直しと積立金の適正額を算出する",
-            "理事長は総会の議事録を作成して組合員に配布する",
-            "VRMアバターのアニメーション作成ツールを開発している",
+            "JavaScriptの非同期処理ではPromiseとasync/awaitを使うのが一般的です",
+            "Machine learning models require hyperparameter tuning to improve accuracy",
+            "太宰治の人間失格は現代においても多くの読者に共感を与える名作である",
+            "Quantum computers can solve problems that are intractable for classical computers",
+            "シェイクスピアのハムレットは生と死をテーマにした不朽の傑作である",
+            "Python list comprehensions make code more concise and readable",
+            "村上春樹の作品には独特の静謐さと喪失感が漂っている",
+            "Studio Ghibli films are beloved worldwide for their artistry and storytelling",
+            "ReactやVue.jsなどのフロントエンドフレームワークは開発効率を大幅に向上させる",
+            "Natsume Soseki's Kokoro is a masterpiece exploring human psychology",
+            "データベース設計ではリレーショナルモデルと正規化を理解することが重要です",
+            "GitHub pull requests and code reviews are essential for team development",
+            "宮沢賢治の銀河鉄道の夜は幻想的な世界観が魅力の童話である",
+            "The Matrix is considered a landmark film in the cyberpunk genre",
+            "TypeScriptの型システムは大規模アプリケーション開発で威力を発揮する",
+            "Agatha Christie's mystery novels captivate readers with clever twists",
+            "Docker コンテナを使うことでアプリケーションの環境を簡単に再現できる",
+            "The Beatles' music remains a timeless cornerstone of pop music history",
+            "REST APIの設計ではHTTPメソッドとステータスコードを適切に使い分ける必要がある",
+            "Yukio Mishima's The Temple of the Golden Pavilion explores beauty and destruction",
         ];
+
 
         const jsonSamples = [
             {
-                name: "Wireless Headphones",
-                category: "electronics",
-                price: 99.99,
-                rating: 4.5,
+                title: "人間失格",
+                author: "太宰治",
+                category: "文学",
+                year: 1948,
+                rating: 4.8,
             },
             {
-                name: "Smart LED Bulb",
-                category: "home",
-                price: 24.99,
-                rating: 4.3,
-            },
-            {
-                name: "Portable Charger",
-                category: "electronics",
-                price: 29.99,
-                rating: 3.6,
-            },
-            {
-                name: "Bluetooth Speaker",
-                category: "electronics",
-                price: 59.99,
+                title: "The Great Gatsby",
+                author: "F. Scott Fitzgerald",
+                category: "literature",
+                year: 1925,
                 rating: 4.7,
             },
             {
-                name: "Yoga Mat",
-                category: "fitness",
-                price: 34.99,
-                rating: 4.1,
+                title: "リーダブルコード",
+                author: "Dustin Boswell",
+                category: "プログラミング",
+                year: 2012,
+                rating: 4.6,
+            },
+            {
+                title: "Clean Code",
+                author: "Robert C. Martin",
+                category: "programming",
+                year: 2008,
+                rating: 4.7,
+            },
+            {
+                title: "千と千尋の神隠し",
+                director: "宮崎駿",
+                category: "映画",
+                year: 2001,
+                rating: 4.9,
+            },
+            {
+                title: "The Matrix",
+                director: "Wachowski Brothers",
+                category: "movie",
+                year: 1999,
+                rating: 4.8,
+            },
+            {
+                title: "ノルウェイの森",
+                author: "村上春樹",
+                category: "文学",
+                year: 1987,
+                rating: 4.3,
+            },
+            {
+                title: "1984",
+                author: "George Orwell",
+                category: "literature",
+                year: 1949,
+                rating: 4.8,
+            },
+            {
+                name: "React",
+                type: "JavaScriptライブラリ",
+                category: "フロントエンド",
+                downloads: 18000000,
+                rating: 4.7,
+            },
+            {
+                name: "Docker",
+                type: "Container Platform",
+                category: "infrastructure",
+                downloads: 5000000,
+                rating: 4.8,
+            },
+            {
+                title: "坊っちゃん",
+                author: "夏目漱石",
+                category: "文学",
+                year: 1906,
+                rating: 4.5,
+            },
+            {
+                title: "To Kill a Mockingbird",
+                author: "Harper Lee",
+                category: "literature",
+                year: 1960,
+                rating: 4.8,
+            },
+            {
+                album: "Sgt. Pepper's Lonely Hearts Club Band",
+                artist: "The Beatles",
+                category: "music",
+                year: 1967,
+                rating: 5.0,
+            },
+            {
+                album: "SONGS",
+                artist: "中島みゆき",
+                category: "音楽",
+                year: 2007,
+                rating: 4.7,
+            },
+            {
+                title: "インセプション",
+                director: "クリストファー・ノーラン",
+                category: "映画",
+                year: 2010,
+                rating: 4.8,
+            },
+            {
+                title: "The Shawshank Redemption",
+                director: "Frank Darabont",
+                category: "movie",
+                year: 1994,
+                rating: 4.9,
+            },
+            {
+                name: "TypeScript",
+                type: "プログラミング言語",
+                category: "開発ツール",
+                downloads: 25000000,
+                rating: 4.8,
+            },
+            {
+                name: "Visual Studio Code",
+                type: "Code Editor",
+                category: "development",
+                downloads: 40000000,
+                rating: 4.9,
+            },
+            {
+                title: "銀河鉄道の夜",
+                author: "宮沢賢治",
+                category: "文学",
+                year: 1934,
+                rating: 4.7,
+            },
+            {
+                title: "Harry Potter and the Philosopher's Stone",
+                author: "J.K. Rowling",
+                category: "literature",
+                year: 1997,
+                rating: 4.8,
             },
         ];
 
         window.loadTextSamples = async () => {
             const out = document.getElementById("textOutput");
             out.innerHTML =
-                '<span class="accent">テキストサンプル登録中...</span>\n';
+                '<span class="accent">Adding text samples...</span>\n';
             try {
                 await db.initialize();
                 await db.addBatch(textSamples);
                 const stats = await db.getStats();
-                out.innerHTML += `<span class="success">✓ ${textSamples.length}件 登録完了</span>\n`;
-                out.innerHTML += `<span class="accent">DB総数: ${stats.total}件</span>\n`;
+                out.innerHTML += `<span class="success">✓ ${textSamples.length} Added</span>\n`;
+                out.innerHTML += `<span class="accent">Total DB: ${stats.total}</span>\n`;
                 updateStats(stats);
             } catch (e) {
-                out.innerHTML += `<span class="warn">✗ エラー: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">✗ Error: ${e.message}</span>\n`;
             }
         };
         window.loadTextSamples2 = async () => {
             const out = document.getElementById("textOutput");
             out.innerHTML =
-                '<span class="accent">テキストサンプル登録中...</span>\n';
+                '<span class="accent">Adding text samples...</span>\n';
             try {
                 let tarr = document
                     .getElementById("inputdata")
@@ -376,31 +490,31 @@
                 await db.initialize();
                 await db.addBatch(tarr);
                 const stats = await db.getStats();
-                out.innerHTML += `<span class="success">✓ ${textSamples.length}件 登録完了</span>\n`;
-                out.innerHTML += `<span class="accent">DB総数: ${stats.total}件</span>\n`;
+                out.innerHTML += `<span class="success">✓ ${textSamples.length} Added</span>\n`;
+                out.innerHTML += `<span class="accent">Total DB: ${stats.total}</span>\n`;
                 updateStats(stats);
             } catch (e) {
-                out.innerHTML += `<span class="warn">✗ エラー: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">✗ Error: ${e.message}</span>\n`;
             }
         };
         window.loadJsonSamples = async () => {
             const out = document.getElementById("jsonOutput");
             out.innerHTML =
-                '<span class="accent">JSONサンプル登録中...</span>\n';
+                '<span class="accent">Adding JSON samples...</span>\n';
             try {
                 await db.initialize();
                 await db.addBatch(jsonSamples);
                 const stats = await db.getStats();
-                out.innerHTML += `<span class="success">✓ ${jsonSamples.length}件 登録完了</span>\n`;
+                out.innerHTML += `<span class="success">✓ ${jsonSamples.length} Added</span>\n`;
                 updateStats(stats);
             } catch (e) {
-                out.innerHTML += `<span class="warn">✗ エラー: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">✗ Error: ${e.message}</span>\n`;
             }
         };
         window.loadJSONSamples2 = async () => {
             const out = document.getElementById("jsonOutput");
             out.innerHTML =
-                '<span class="accent">JSONサンプル登録中...</span>\n';
+                '<span class="accent">Adding JSON samples...</span>\n';
             let rawjson = JSON.parse(
                 document.getElementById("inputjson").value,
             );
@@ -409,11 +523,11 @@
                 await db.initialize();
                 await db.addBatch(rawjson);
                 const stats = await db.getStats();
-                out.innerHTML += `<span class="success">✓ ${jsonSamples.length}件 登録完了</span>\n`;
+                out.innerHTML += `<span class="success">✓ ${jsonSamples.length} Added</span>\n`;
                 updateStats(stats);
             } catch (e) {
                 console.log(e);
-                out.innerHTML += `<span class="warn">✗ エラー: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">✗ Error: ${e.message}</span>\n`;
             }
         };
 
@@ -422,11 +536,11 @@
             const out = document.getElementById("textOutput");
             if (!query) {
                 out.innerHTML =
-                    '<span class="warn">クエリを入力してください</span>';
+                    '<span class="warn">Please enter a query</span>';
                 return;
             }
 
-            out.innerHTML = `<span class="accent">検索中: "${query}"</span>\n`;
+            out.innerHTML = `<span class="accent">Searching for: "${query}"</span>\n`;
             const start = performance.now();
             try {
                 const results = await db.search(query, {
@@ -434,7 +548,7 @@
                     threshold: 0.01,
                 });
                 const elapsed = (performance.now() - start).toFixed(2);
-                out.innerHTML += `<span class="success">✓ ${results.length}件ヒット (${elapsed}ms)</span>\n\n`;
+                out.innerHTML += `<span class="success">✓ ${results.length} hits (${elapsed}ms)</span>\n\n`;
                 for (const r of results) {
                     const bar = "█".repeat(Math.floor(r.similarity * 20));
                     out.innerHTML += `<span class="pink">${r.similarity.toFixed(4)}</span> ${bar}\n`;
@@ -448,13 +562,13 @@
                 });
                 const elapsed2 = (performance.now() - start2).toFixed(2);
                 out.innerHTML += "<b>Normal search for diff</b>\n\n";
-                out.innerHTML += `<span class="success">✓ ${ret2.length}件ヒット (${elapsed2}ms)</span>\n\n`;
+                out.innerHTML += `<span class="success">✓ ${ret2.length} hits (${elapsed2}ms)</span>\n\n`;
                 for (const r of ret2) {
                     out.innerHTML += `<span class="pink">1.0</span>\n`;
                     out.innerHTML += `  ${r}\n\n`;
                 }
             } catch (e) {
-                out.innerHTML += `<span class="warn">✗ エラー: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">✗ Error: ${e.message}</span>\n`;
             }
         };
 
@@ -463,7 +577,7 @@
             const out = document.getElementById("jsonOutput");
             if (!raw) {
                 out.innerHTML =
-                    '<span class="warn">JSONクエリを入力してください</span>';
+                    '<span class="warn">Please enter a JSON query</span>';
                 return;
             }
 
@@ -471,15 +585,15 @@
             try {
                 query = JSON.parse(raw);
             } catch (e) {
-                out.innerHTML = `<span class="warn">JSON形式が不正です: ${e.message}</span>`;
+                out.innerHTML = `<span class="warn">JSON format is invalid: ${e.message}</span>`;
                 return;
             }
 
-            out.innerHTML = `<span class="accent">JSON検索中...</span>\n`;
+            out.innerHTML = `<span class="accent">Searching JSON...</span>\n`;
 
             // デバッグ: クエリの内容を表示
-            out.innerHTML += `<span class="accent">パース結果: ${JSON.stringify(query)}</span>\n`;
-            out.innerHTML += `<span class="accent">クエリのキー: ${Object.keys(query).join(", ")}</span>\n`;
+            out.innerHTML += `<span class="accent">Parsed query: ${JSON.stringify(query)}</span>\n`;
+            out.innerHTML += `<span class="accent">Query keys: ${Object.keys(query).join(", ")}</span>\n`;
 
             // デバッグ: DB内のレコード確認
             const allRecords = await db.getAll();
@@ -487,14 +601,14 @@
                 (r) => r.dataType === "json",
             );
             console.log(jsonRecords);
-            out.innerHTML += `<span class="accent">DB内JSONレコード数: ${jsonRecords.length}</span>\n`;
+            out.innerHTML += `<span class="accent">JSON records in DB: ${jsonRecords.length}</span>\n`;
 
             if (jsonRecords.length > 0) {
                 const sample = jsonRecords[0];
                 const hasFVI = sample.fingerprint?.layers?.fieldValueIndex;
-                out.innerHTML += `<span class="accent">fieldValueIndex存在: ${!!hasFVI}</span>\n`;
+                out.innerHTML += `<span class="accent">fieldValueIndex exists: ${!!hasFVI}</span>\n`;
                 if (hasFVI) {
-                    out.innerHTML += `<span class="accent">fieldValueIndex内容: ${JSON.stringify(hasFVI.slice(0, 2))}</span>\n`;
+                    out.innerHTML += `<span class="accent">fieldValueIndex content: ${JSON.stringify(hasFVI.slice(0, 2))}</span>\n`;
                 }
             }
 
@@ -508,28 +622,28 @@
                     dataType: "json",
                 });
                 const elapsed = (performance.now() - start).toFixed(2);
-                out.innerHTML += `<span class="success">✓ ${results.length}件ヒット (${elapsed}ms)</span>\n\n`;
+                out.innerHTML += `<span class="success">✓ ${results.length} hits (${elapsed}ms)</span>\n\n`;
                 for (const r of results) {
                     const bar = "█".repeat(Math.floor(r.similarity * 20));
                     out.innerHTML += `<span class="pink">${r.similarity.toFixed(4)}</span> ${bar}\n`;
                     out.innerHTML += `  ${JSON.stringify(r.data, null, 2)}\n\n`;
                 }
             } catch (e) {
-                out.innerHTML += `<span class="warn">✗ エラー: ${e.message}\n${e.stack}</span>\n`;
+                out.innerHTML += `<span class="warn">✗ Error: ${e.message}\n${e.stack}</span>\n`;
             }
         };
 
         window.clearDB = async () => {
             await db.clear();
             document.getElementById("textOutput").innerHTML =
-                '<span class="success">✓ DB クリア完了</span>';
+                '<span class="success">✓ DB cleared</span>';
             document.getElementById("dbStats").innerHTML = "";
         };
 
         function updateStats(stats) {
             const el = document.getElementById("dbStats");
             el.innerHTML = `
-        <div class="stat-item"><div class="stat-value">${stats.total}</div><div class="stat-label">総レコード数</div></div>
+        <div class="stat-item"><div class="stat-value">${stats.total}</div><div class="stat-label">Total</div></div>
         ${Object.entries(stats.byType)
                     .map(
                         ([k, v]) =>
@@ -543,7 +657,7 @@
         window.runTests = async () => {
             const out = document.getElementById("testOutput");
             out.innerHTML =
-                '<span class="accent">テスト実行中...</span>\n\n';
+                '<span class="accent">Running tests...</span>\n\n';
             let pass = 0,
                 fail = 0;
 
@@ -559,15 +673,15 @@
 
             // Test 1: 基本生成
             try {
-                const fp = new SemanticFingerprint("テスト文字列");
+                const fp = new SemanticFingerprint("test string");
                 assert(
-                    "テキスト指紋生成",
+                    "text fingerprint generation",
                     fp.layers.charHash !== null &&
                     fp.layers.ngramHash !== null,
                 );
             } catch (e) {
                 fail++;
-                out.innerHTML += `<span class="warn">  ✗ テキスト指紋生成: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">  ✗ text fingerprint generation: ${e.message}</span>\n`;
             }
 
             // Test 2: JSON生成
@@ -577,27 +691,27 @@
                     num: 42,
                 });
                 assert(
-                    "JSON指紋生成",
+                    "JSON fingerprint generation",
                     fp.layers.structureHash !== null &&
                     fp.layers.keyPathIndex !== null,
                 );
             } catch (e) {
                 fail++;
-                out.innerHTML += `<span class="warn">  ✗ JSON指紋生成: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">  ✗ JSON fingerprint generation: ${e.message}</span>\n`;
             }
 
             // Test 3: 同一テキストの類似度 = 1.0
             try {
-                const fp1 = new SemanticFingerprint("マンション管理組合");
-                const fp2 = new SemanticFingerprint("マンション管理組合");
+                const fp1 = new SemanticFingerprint("human psychology");
+                const fp2 = new SemanticFingerprint("human psychology");
                 const sim = fp1.similarity(fp2);
                 assert(
-                    `同一テキスト類似度 = ${sim.toFixed(4)} (期待: 1.0)`,
+                    `same text similarity = ${sim.toFixed(4)} (expected: 1.0)`,
                     sim > 0.99,
                 );
             } catch (e) {
                 fail++;
-                out.innerHTML += `<span class="warn">  ✗ 同一テキスト: ${e.message}</span>\n`;
+                out.innerHTML += `<span class="warn">  ✗ same text: ${e.message}</span>\n`;
             }
 
             // Test 4: 類似テキスト > 無関係テキスト
@@ -696,24 +810,6 @@
             out.innerHTML += `\n<span class="${fail === 0 ? "success" : "warn"}">結果: ${pass} passed / ${fail} failed</span>\n`;
         };
 
-        // ---- Download ----
-        window.downloadFile = async (name) => {
-            const url = `./${name}.js`;
-            try {
-                const res = await fetch(url);
-                const text = await res.text();
-                const blob = new Blob([text], {
-                    type: "application/javascript",
-                });
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = `${name}.js`;
-                a.click();
-                URL.revokeObjectURL(a.href);
-            } catch (e) {
-                alert("ダウンロードに失敗: " + e.message);
-            }
-        };
     </script>
 </body>
 

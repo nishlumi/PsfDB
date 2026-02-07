@@ -6,7 +6,7 @@ Progressive Semantic Fingerprintingを5分で始めるためのガイドです�
 
 ### ブラウザ環境 (Script Tag)
 
-HTMLファイルに以下を追加します。`psfdb-sf.js` を**先に**読み込む必要があります。
+HTMLファイルに以下を追加します。
 
 ```html
 <script src="psfdb.js"></script>
@@ -196,43 +196,43 @@ open demo.html
 
 ## トラブルシューティング
 
-### IndexedDBが使えない場合
+### IndexedDBが使えない場合（メモリモード）
+
+`persist: false` オプションでメモリモードが利用可能です：
 
 ```javascript
-// メモリ上のみで動作（永続化なし）
-const fingerprints = [];
+// メモリモード（永続化なし）
+const db = new PsfDB('test', 1, { persist: false });
+await db.initialize();
 
-async function search(query) {
-  const queryFp = new SemanticFingerprint(query);
-  
-  return fingerprints
-    .map(fp => ({
-      similarity: queryFp.similarity(fp.fingerprint),
-      data: fp.data
-    }))
-    .filter(r => r.similarity > 0.3)
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 10);
-}
+// 通常通り使用可能
+await db.add('データ1');
+await db.add('データ2');
+const results = await db.search('データ');
+
+// ページをリロードするとデータは消えます
 ```
+
+**注意事項:**
+- ページをリロードまたは閉じるとデータは消失します
+- IndexedDBが使えないService Worker環境などで有効です
+- 大量データの場合、メモリ使用量に注意してください
 
 ### ブラウザの容量制限
 
 ```javascript
-// 古いデータを自動削除
-async function cleanupOldData(db, maxAge) {
-  const cutoff = Date.now() - maxAge;
-  const all = await db.getAll();
-  
-  for (const record of all) {
-    if (new Date(record.createdAt) < cutoff) {
-      await db.delete(record.id);
-    }
-  }
-}
-
 // 1週間以上前のデータを削除
-await cleanupOldData(db, 7 * 24 * 60 * 60 * 1000);
+const count = await db.deleteOlderThan(7 * 24 * 60 * 60 * 1000);
+console.log(`${count}件のレコードを削除しました`);
+
+// 条件に一致するデータを一括削除
+await db.deleteWhere(record => record.dataType === 'text');
+
+// 複合条件での削除
+const cutoff = new Date(Date.now() - 86400000); // 1日前
+await db.deleteWhere(record => 
+    new Date(record.createdAt) < cutoff && record.dataType === 'json'
+);
 ```
 
 ## サポート

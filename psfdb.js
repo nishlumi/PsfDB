@@ -5,7 +5,7 @@
  * Supports both text (Japanese/English) and JSON
  * Persistence with IndexedDB + async iterator support
  *
- * @version 1.4.0
+ * @version 1.0.0
  * @license MIT
  */
 
@@ -26,7 +26,7 @@
     /**
      * Progressive Semantic Fingerprinting
      *
-     * @version 1.3.0
+     * @version 1.0.0
      * @license MIT
      */
     class SemanticFingerprint {
@@ -940,7 +940,7 @@
      *
      * Search DB with IndexedDB persistence + async iterator support
      *
-     * @version 1.1.0
+     * @version 1.0.0
      * @license MIT
      */
 
@@ -948,11 +948,16 @@
         /**
          * @param {string} dbName
          * @param {number} version
+         * @param {object} [options]
+         * @param {boolean} [options.persist=true] - Set false for memory-only mode
          */
-        constructor(dbName = 'SemanticDB', version = 1) {
+        constructor(dbName = 'SemanticDB', version = 1, options = {}) {
             this.dbName = dbName;
             this.version = version;
             this.db = null;
+            this.persistent = options.persist !== false;
+            this._memoryStore = [];
+            this._memoryId = 0;
         }
 
         // ==========================================================================
@@ -960,6 +965,9 @@
         // ==========================================================================
 
         async initialize() {
+            // Memory-only mode: skip IndexedDB
+            if (!this.persistent) return;
+
             if (this.db) return;
 
             return new Promise((resolve, reject) => {
@@ -990,6 +998,7 @@
         }
 
         async _ensureDB() {
+            if (!this.persistent) return;
             if (!this.db) await this.initialize();
         }
 
@@ -1009,16 +1018,23 @@
             const fingerprint =
                 data instanceof SemanticFingerprint ? data : new SemanticFingerprint(data);
 
+            const record = {
+                dataType: fingerprint.dataType,
+                fingerprint: fingerprint.serialize(),
+                originalData: originalData ?? (data instanceof SemanticFingerprint ? null : data),
+                createdAt: new Date().toISOString(),
+            };
+
+            // Memory-only mode
+            if (!this.persistent) {
+                record.id = ++this._memoryId;
+                this._memoryStore.push(record);
+                return record.id;
+            }
+
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readwrite');
                 const store = tx.objectStore('fingerprints');
-
-                const record = {
-                    dataType: fingerprint.dataType,
-                    fingerprint: fingerprint.serialize(),
-                    originalData: originalData ?? (data instanceof SemanticFingerprint ? null : data),
-                    createdAt: new Date().toISOString(),
-                };
 
                 const req = store.add(record);
                 req.onsuccess = () => resolve(req.result);
@@ -1033,6 +1049,25 @@
          */
         async addBatch(dataArray) {
             await this._ensureDB();
+
+            // Memory-only mode
+            if (!this.persistent) {
+                const ids = [];
+                for (const data of dataArray) {
+                    const fp =
+                        data instanceof SemanticFingerprint ? data : new SemanticFingerprint(data);
+                    const record = {
+                        id: ++this._memoryId,
+                        dataType: fp.dataType,
+                        fingerprint: fp.serialize(),
+                        originalData: data instanceof SemanticFingerprint ? null : data,
+                        createdAt: new Date().toISOString(),
+                    };
+                    this._memoryStore.push(record);
+                    ids.push(record.id);
+                }
+                return ids;
+            }
 
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readwrite');
@@ -1072,6 +1107,35 @@
             const { limit = 10, threshold = 0.5, dataType = null } = options;
 
             const queryFp = this._buildQueryFP(query);
+
+            // Memory-only mode
+            if (!this.persistent) {
+                const results = [];
+                const records = dataType
+                    ? this._memoryStore.filter(r => r.dataType === dataType)
+                    : this._memoryStore;
+
+                for (const record of records) {
+                    try {
+                        const targetFp = SemanticFingerprint.deserialize(record.fingerprint);
+                        const sim = this._calcSimilarity(queryFp, targetFp, query, record);
+
+                        if (sim >= threshold) {
+                            results.push({
+                                id: record.id,
+                                similarity: sim,
+                                data: record.originalData,
+                                createdAt: record.createdAt,
+                            });
+                        }
+                    } catch {
+                        // Skip corrupted records
+                    }
+                }
+
+                results.sort((a, b) => b.similarity - a.similarity);
+                return results.slice(0, limit);
+            }
 
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readonly');
@@ -1126,6 +1190,32 @@
             const { threshold = 0.5, dataType = null } = options;
 
             const queryFp = this._buildQueryFP(query);
+
+            // Memory-only mode
+            if (!this.persistent) {
+                const records = dataType
+                    ? this._memoryStore.filter(r => r.dataType === dataType)
+                    : this._memoryStore;
+
+                for (const record of records) {
+                    try {
+                        const targetFp = SemanticFingerprint.deserialize(record.fingerprint);
+                        const sim = this._calcSimilarity(queryFp, targetFp, query, record);
+
+                        if (sim >= threshold) {
+                            yield {
+                                id: record.id,
+                                similarity: sim,
+                                data: record.originalData,
+                                createdAt: record.createdAt,
+                            };
+                        }
+                    } catch {
+                        // skip
+                    }
+                }
+                return;
+            }
 
             const tx = this.db.transaction(['fingerprints'], 'readonly');
             const store = tx.objectStore('fingerprints');
@@ -1229,6 +1319,12 @@
 
         async getById(id) {
             await this._ensureDB();
+
+            // Memory-only mode
+            if (!this.persistent) {
+                return this._memoryStore.find(r => r.id === id) ?? null;
+            }
+
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readonly');
                 const req = tx.objectStore('fingerprints').get(id);
@@ -1239,6 +1335,12 @@
 
         async getAll() {
             await this._ensureDB();
+
+            // Memory-only mode
+            if (!this.persistent) {
+                return [...this._memoryStore];
+            }
+
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readonly');
                 const req = tx.objectStore('fingerprints').getAll();
@@ -1249,6 +1351,14 @@
 
         async delete(id) {
             await this._ensureDB();
+
+            // Memory-only mode
+            if (!this.persistent) {
+                const idx = this._memoryStore.findIndex(r => r.id === id);
+                if (idx >= 0) this._memoryStore.splice(idx, 1);
+                return;
+            }
+
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readwrite');
                 const req = tx.objectStore('fingerprints').delete(id);
@@ -1259,12 +1369,56 @@
 
         async clear() {
             await this._ensureDB();
+
+            // Memory-only mode
+            if (!this.persistent) {
+                this._memoryStore = [];
+                return;
+            }
+
             return new Promise((resolve, reject) => {
                 const tx = this.db.transaction(['fingerprints'], 'readwrite');
                 const req = tx.objectStore('fingerprints').clear();
                 req.onsuccess = () => resolve();
                 req.onerror = () => reject(req.error);
             });
+        }
+
+        /**
+         * Delete data older than specified age
+         * @param {number} maxAgeMs - Maximum age in milliseconds
+         * @returns {Promise<number>} - Number of deleted records
+         */
+        async deleteOlderThan(maxAgeMs) {
+            const cutoff = new Date(Date.now() - maxAgeMs);
+            const all = await this.getAll();
+            let deleted = 0;
+
+            for (const record of all) {
+                if (new Date(record.createdAt) < cutoff) {
+                    await this.delete(record.id);
+                    deleted++;
+                }
+            }
+            return deleted;
+        }
+
+        /**
+         * Delete data matching a condition
+         * @param {Function} predicate - Condition function (record => boolean)
+         * @returns {Promise<number>} - Number of deleted records
+         */
+        async deleteWhere(predicate) {
+            const all = await this.getAll();
+            let deleted = 0;
+
+            for (const record of all) {
+                if (predicate(record)) {
+                    await this.delete(record.id);
+                    deleted++;
+                }
+            }
+            return deleted;
         }
 
         // ==========================================================================

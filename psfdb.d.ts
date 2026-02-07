@@ -107,6 +107,11 @@ declare namespace PsfDB {
         /** Data type specification ('text' or 'json') */
         dataType?: 'text' | 'json';
     }
+
+    interface PsfDBOptions {
+        /** Set false for memory-only mode (default: true) */
+        persist?: boolean;
+    }
 }
 
 /**
@@ -117,8 +122,9 @@ declare class PsfDB {
     /**
      * @param dbName Database name (default: 'SemanticDB')
      * @param version Version (default: 1)
+     * @param options Options (persist: false for memory-only mode)
      */
-    constructor(dbName?: string, version?: number);
+    constructor(dbName?: string, version?: number, options?: PsfDB.PsfDBOptions);
 
     /**
      * Initialize (open) database
@@ -163,6 +169,20 @@ declare class PsfDB {
 
     /** Delete all data */
     clear(): Promise<void>;
+
+    /**
+     * Delete data older than specified age
+     * @param maxAgeMs Maximum age in milliseconds
+     * @returns Number of deleted records
+     */
+    deleteOlderThan(maxAgeMs: number): Promise<number>;
+
+    /**
+     * Delete data matching a condition
+     * @param predicate Condition function
+     * @returns Number of deleted records
+     */
+    deleteWhere(predicate: (record: any) => boolean): Promise<number>;
 
     /** Get statistics */
     getStats(): Promise<{

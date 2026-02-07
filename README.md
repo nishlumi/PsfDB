@@ -261,14 +261,19 @@ const PsfDB = require('./psfdb.js');
 const db = new PsfDB('MyDatabase');
 ```
 
-#### ES Modules (Bundler)
+#### ES Modules (import)
 
-When using bundlers like Webpack or Rollup:
+For modern bundlers (Webpack, Rollup, etc.) or direct browser imports:
 
 ```javascript
-import SemanticFingerprint from './psfdb-sf.js';
-import PsfDB from './psfdb-main.js';
+import PsfDB from './psfdb.js';
+
+// Usage example
+const db = new PsfDB('MyDatabase');
+await db.initialize();
 ```
+
+**Note**: `psfdb.js` is in UMD format and includes the SemanticFingerprint class. No need to import separately.
 
 ### Basic Usage
 
@@ -292,6 +297,26 @@ results.forEach(result => {
   console.log(`Data: ${result.data}`);
 });
 ```
+
+### Memory Mode (No Persistence)
+
+From v1.4.0+, you can use `persist: false` option to operate in memory only without IndexedDB.
+
+```javascript
+// Memory mode (no persistence)
+const db = new PsfDB('test', 1, { persist: false });
+await db.initialize();
+
+// Use as normal
+await db.add('Data 1');
+await db.add('Data 2');
+const results = await db.search('Data');
+```
+
+**Notes:**
+- Data is lost when the page is reloaded or closed
+- Useful in Service Worker environments where IndexedDB is unavailable
+- Be mindful of memory usage with large datasets
 
 ### JSON Search
 
@@ -582,14 +607,13 @@ for await (const result of db.searchStream(query)) {
 
 A: Split data or delete old data.
 ```javascript
-// Delete old data
-const stats = await db.getStats();
-const oldEntries = await db.getAll().filter(
-  r => new Date(r.createdAt) < cutoffDate
-);
-for (const entry of oldEntries) {
-  await db.delete(entry.id);
-}
+// v1.4.0+: Use built-in methods to delete old data
+// Delete data older than 1 week
+const count = await db.deleteOlderThan(7 * 24 * 60 * 60 * 1000);
+console.log(`Deleted ${count} records`);
+
+// Bulk delete data matching a condition
+await db.deleteWhere(record => record.dataType === 'text');
 ```
 
 ## License

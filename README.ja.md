@@ -261,14 +261,19 @@ const PsfDB = require('./psfdb.js');
 const db = new PsfDB('MyDatabase');
 ```
 
-#### ES Modules (Bundler)
+#### ES Modules (import)
 
-WebpackやRollupなどのバンドラを使用する場合：
+モダンなバンドラ（Webpack、Rollup等）またはブラウザでの直接importの場合：
 
 ```javascript
-import SemanticFingerprint from './psfdb-sf.js';
-import PsfDB from './psfdb-main.js';
+import PsfDB from './psfdb.js';
+
+// 使用例
+const db = new PsfDB('MyDatabase');
+await db.initialize();
 ```
+
+**注意**: `psfdb.js`はUMD形式で、SemanticFingerprintクラスも内包しています。個別にimportする必要はありません。
 
 ### 基本的な使い方
 
@@ -292,6 +297,26 @@ results.forEach(result => {
   console.log(`データ: ${result.data}`);
 });
 ```
+
+### メモリモード（永続化なし）
+
+v1.4.0以降では、`persist: false` オプションでIndexedDBを使用せずメモリ上のみで動作させることができます。
+
+```javascript
+// メモリモード（永続化なし）
+const db = new PsfDB('test', 1, { persist: false });
+await db.initialize();
+
+// 通常通り使用可能
+await db.add('データ1');
+await db.add('データ2');
+const results = await db.search('データ');
+```
+
+**注意事項:**
+- ページをリロードまたは閉じるとデータは消失します
+- IndexedDBが使えないService Worker環境などで有効です
+- 大量データの場合はメモリ使用量に注意してください
 
 ### JSON検索
 
@@ -585,14 +610,13 @@ for await (const result of db.searchStream(query)) {
 
 A: データを分割するか、古いデータを削除してください。
 ```javascript
-// 古いデータを削除
-const stats = await db.getStats();
-const oldEntries = await db.getAll().filter(
-  r => new Date(r.createdAt) < cutoffDate
-);
-for (const entry of oldEntries) {
-  await db.delete(entry.id);
-}
+// v1.4.0以降: 組み込みメソッドで古いデータを削除
+// 1週間以上前のデータを削除
+const count = await db.deleteOlderThan(7 * 24 * 60 * 60 * 1000);
+console.log(`${count}件のレコードを削除しました`);
+
+// 条件に一致するデータを一括削除
+await db.deleteWhere(record => record.dataType === 'text');
 ```
 
 ## ライセンス
