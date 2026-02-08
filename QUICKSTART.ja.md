@@ -118,7 +118,24 @@ for (const doc of documents) {
 const chapters = await docDB.search('基本', { limit: 3 });
 ```
 
-### パターン2: FAQ検索
+### パターン2: ノンブロッキング一括追加
+
+大量データの場合、`addBatchAsync`を使用するとUIがフリーズしません：
+
+```javascript
+const db = new PsfDB('LargeData');
+await db.initialize();
+
+// ノンブロッキングな一括追加（進捗表示付き）
+const ids = await db.addBatchAsync(largeDataArray, {
+  chunkSize: 50,
+  onProgress: (done, total) => {
+    console.log(`進捗: ${done}/${total}`);
+  }
+});
+```
+
+### パターン3: FAQ検索
 
 ```javascript
 const faqDB = new PsfDB('FAQ');
@@ -143,7 +160,7 @@ const similar = await faqDB.search('商品を返したい', {
 console.log(similar[0].data.answer); // 返品の回答が表示される
 ```
 
-### パターン3: 商品レコメンデーション
+### パターン4: 商品レコメンデーション
 
 ```javascript
 const productDB = new PsfDB('Products');

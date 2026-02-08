@@ -371,6 +371,26 @@ const documents = [
 await db.addBatch(documents);
 ```
 
+### Non-blocking Batch Add
+
+For large datasets, use `addBatchAsync` to keep the UI responsive:
+
+```javascript
+// Non-blocking batch add with progress callback
+const ids = await db.addBatchAsync(documents, {
+  chunkSize: 50,  // Items per chunk (default: 50)
+  onProgress: (done, total) => {
+    console.log(`${done}/${total} items processed`);
+    // Update progress bar, etc.
+  }
+});
+```
+
+**Features:**
+- Yields control to the event loop between chunks, keeping UI interactive
+- Progress callback for displaying loading indicators
+- Same return value as `addBatch` (array of IDs)
+
 ### Streaming Search
 
 ```javascript

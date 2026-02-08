@@ -112,6 +112,13 @@ declare namespace PsfDB {
         /** Set false for memory-only mode (default: true) */
         persist?: boolean;
     }
+
+    interface AddBatchAsyncOptions {
+        /** Number of items per chunk (default: 50) */
+        chunkSize?: number;
+        /** Progress callback (processed, total) => void */
+        onProgress?: (processed: number, total: number) => void;
+    }
 }
 
 /**
@@ -144,6 +151,15 @@ declare class PsfDB {
      * @returns Array of added IDs
      */
     addBatch<T = any>(dataArray: T[]): Promise<number[]>;
+
+    /**
+     * Non-blocking batch add with chunked processing
+     * Yields control to event loop between chunks to keep UI responsive
+     * @param dataArray Array of data to add
+     * @param options Chunk size and progress callback options
+     * @returns Array of added IDs
+     */
+    addBatchAsync<T = any>(dataArray: T[], options?: PsfDB.AddBatchAsyncOptions): Promise<number[]>;
 
     /**
      * Execute search

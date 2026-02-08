@@ -371,6 +371,26 @@ const documents = [
 await db.addBatch(documents);
 ```
 
+### ノンブロッキング一括追加
+
+大量データの場合、`addBatchAsync`を使用するとUIがフリーズしません：
+
+```javascript
+// ノンブロッキングな一括追加（進捗コールバック付き）
+const ids = await db.addBatchAsync(documents, {
+  chunkSize: 50,  // 1チャンクあたりの件数（デフォルト: 50）
+  onProgress: (done, total) => {
+    console.log(`${done}/${total} 件処理完了`);
+    // プログレスバーの更新などに使用
+  }
+});
+```
+
+**特徴:**
+- チャンク間でイベントループに制御を戻すため、UIが応答を維持
+- 進捗コールバックでローディング表示が可能
+- 戻り値は`addBatch`と同じ（IDの配列）
+
 ### ストリーミング検索
 
 ```javascript

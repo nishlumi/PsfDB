@@ -1094,6 +1094,82 @@
             });
         }
 
+        /**
+         * Non-blocking batch add with chunked processing
+         * Yields control to event loop between chunks to keep UI responsive
+         * @param {Array} dataArray - Array of data to add
+         * @param {object} [options]
+         * @param {number} [options.chunkSize=50] - Number of items per chunk
+         * @param {Function} [options.onProgress] - Progress callback (processed, total) => void
+         * @returns {Promise<number[]>} - Array of inserted IDs
+         */
+        async addBatchAsync(dataArray, options = {}) {
+            const { chunkSize = 50, onProgress = null } = options;
+            await this._ensureDB();
+
+            const ids = [];
+            const total = dataArray.length;
+
+            for (let i = 0; i < total; i += chunkSize) {
+                const chunk = dataArray.slice(i, i + chunkSize);
+
+                // Memory-only mode
+                if (!this.persistent) {
+                    for (const data of chunk) {
+                        const fp =
+                            data instanceof SemanticFingerprint
+                                ? data
+                                : new SemanticFingerprint(data);
+                        const record = {
+                            id: ++this._memoryId,
+                            dataType: fp.dataType,
+                            fingerprint: fp.serialize(),
+                            originalData: data instanceof SemanticFingerprint ? null : data,
+                            createdAt: new Date().toISOString(),
+                        };
+                        this._memoryStore.push(record);
+                        ids.push(record.id);
+                    }
+                } else {
+                    // IndexedDB mode - process chunk in single transaction
+                    await new Promise((resolve, reject) => {
+                        const tx = this.db.transaction(['fingerprints'], 'readwrite');
+                        const store = tx.objectStore('fingerprints');
+
+                        tx.oncomplete = () => resolve();
+                        tx.onerror = () => reject(tx.error);
+
+                        for (const data of chunk) {
+                            const fp =
+                                data instanceof SemanticFingerprint
+                                    ? data
+                                    : new SemanticFingerprint(data);
+
+                            const record = {
+                                dataType: fp.dataType,
+                                fingerprint: fp.serialize(),
+                                originalData: data instanceof SemanticFingerprint ? null : data,
+                                createdAt: new Date().toISOString(),
+                            };
+
+                            const req = store.add(record);
+                            req.onsuccess = () => ids.push(req.result);
+                        }
+                    });
+                }
+
+                // Report progress
+                if (onProgress) {
+                    onProgress(Math.min(i + chunkSize, total), total);
+                }
+
+                // Yield to event loop - keeps UI responsive
+                await new Promise((r) => setTimeout(r, 0));
+            }
+
+            return ids;
+        }
+
         // ==========================================================================
         // Search
         // ==========================================================================

@@ -118,7 +118,24 @@ for (const doc of documents) {
 const chapters = await docDB.search('basics', { limit: 3 });
 ```
 
-### Pattern 2: FAQ Search
+### Pattern 2: Non-blocking Batch Add
+
+For large datasets, use `addBatchAsync` to keep the UI responsive:
+
+```javascript
+const db = new PsfDB('LargeData');
+await db.initialize();
+
+// Non-blocking batch add with progress
+const ids = await db.addBatchAsync(largeDataArray, {
+  chunkSize: 50,
+  onProgress: (done, total) => {
+    console.log(`Progress: ${done}/${total}`);
+  }
+});
+```
+
+### Pattern 3: FAQ Search
 
 ```javascript
 const faqDB = new PsfDB('FAQ');
@@ -143,7 +160,7 @@ const similar = await faqDB.search('I want to return a product', {
 console.log(similar[0].data.answer); // Return policy answer displayed
 ```
 
-### Pattern 3: Product Recommendation
+### Pattern 4: Product Recommendation
 
 ```javascript
 const productDB = new PsfDB('Products');
