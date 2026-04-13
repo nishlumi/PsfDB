@@ -12,7 +12,7 @@ let SemanticFingerprint, PsfDB;
 
 if (typeof require !== 'undefined' && typeof module !== 'undefined') {
   // Node.js
-  PsfDB = require('./psfdb.js');
+  PsfDB = require('./dist/psfdb.cjs.js');
   SemanticFingerprint = PsfDB.Fingerprint;
 } else if (typeof window !== 'undefined') {
   // Browser (Global variables from script tags)

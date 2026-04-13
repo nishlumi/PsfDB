@@ -9,7 +9,7 @@ Progressive Semantic Fingerprintingを5分で始めるためのガイドです�
 HTMLファイルに以下を追加します。
 
 ```html
-<script src="psfdb.js"></script>
+<script src="dist/psfdb.browser.js"></script>
 <script>
   // グローバル変数として利用可能
   const db = new PsfDB();
@@ -21,13 +21,14 @@ HTMLファイルに以下を追加します。
 `require` を使用して読み込みます。
 
 ```bash
-# ファイルをプロジェクトにコピー
-cp psfdb.js your-project/
+# ファイルをプロジェクトにコピー。または npm を使用
+cp dist/psfdb*.js your-project/
 ```
 
 ```javascript
 /* main.js */
-const PsfDB = require('./psfdb.js');
+const PsfDB = require('./dist/psfdb.cjs.js'); // CommonJSの場合は dist/psfdb.cjs.js
+// ES Moduleの場合は import PsfDB from './dist/psfdb.esm.js';
 const SemanticFingerprint = PsfDB.Fingerprint;
 
 // 使用
@@ -118,17 +119,18 @@ for (const doc of documents) {
 const chapters = await docDB.search('基本', { limit: 3 });
 ```
 
-### パターン2: ノンブロッキング一括追加
+### パターン2: 大量データのメモリ管理とノンブロッキング一括追加
 
-大量データの場合、`addBatchAsync`を使用するとUIがフリーズしません：
+数十万件以上の大量データをループで連続して `add` や `addBatch` で登録すると、メモリ不足でクラッシュする可能性があります。
+巨大なデータ（Base64の画像など）はPsfDBに渡さず事前に除外し、必ず `addBatchAsync` を使用してチャンクごとに処理してください。
 
 ```javascript
 const db = new PsfDB('LargeData');
 await db.initialize();
 
-// ノンブロッキングな一括追加（進捗表示付き）
+// ノンブロッキングな一括追加（メモリクラッシュを防止し、進捗表示も可能）
 const ids = await db.addBatchAsync(largeDataArray, {
-  chunkSize: 50,
+  chunkSize: 50, // データ一個が大きい場合は10〜20に減らす
   onProgress: (done, total) => {
     console.log(`進捗: ${done}/${total}`);
   }
@@ -209,7 +211,7 @@ open demo.html
 
 1. **README.md** - 完全なドキュメント
 2. **examples.js** - 様々な使用例
-3. **psfdb.js** - ソースコード（コメント付き）
+3. **psfdb*.js** - ソースコード（モジュール別）
 
 ## トラブルシューティング
 

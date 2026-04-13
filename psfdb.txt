@@ -1,3 +1,4 @@
+```javascript
 /**
  * PsfDB (Progressive Semantic Fingerprinting Database)
  *
@@ -1548,3 +1549,4 @@
     return PsfDB;
 
 }));
+```

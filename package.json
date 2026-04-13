@@ -2,9 +2,20 @@
   "name": "psfdb",
   "version": "1.0.0",
   "description": "Model-independent lightweight semantic search system. Supports both text (Japanese/English) and JSON.",
-  "main": "psfdb.js",
+  "main": "dist/psfdb.cjs.js",
+  "module": "dist/psfdb.esm.js",
+  "browser": "dist/psfdb.browser.js",
+  "exports": {
+    ".": {
+      "import": "./dist/psfdb.esm.js",
+      "require": "./dist/psfdb.cjs.js",
+      "browser": "./dist/psfdb.browser.js",
+      "default": "./psfdb.js"
+    }
+  },
   "types": "psfdb.d.ts",
   "scripts": {
+    "build": "node build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -34,6 +45,9 @@
   "homepage": "https://github.com/nishlumi/psfdb#readme",
   "files": [
     "psfdb.js",
+    "dist/psfdb.esm.js",
+    "dist/psfdb.cjs.js",
+    "dist/psfdb.browser.js",
     "psfdb.d.ts",
     "examples.js",
     "demo.html",
@@ -44,9 +58,6 @@
   ],
   "engines": {
     "node": ">=14.0.0"
-  },
-  "browser": {
-    "psfdb.js": "./psfdb.js"
   },
   "devDependencies": {},
   "dependencies": {}

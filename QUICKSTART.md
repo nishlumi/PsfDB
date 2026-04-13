@@ -9,7 +9,7 @@ Get started with Progressive Semantic Fingerprinting in 5 minutes.
 Add the following to your HTML file.
 
 ```html
-<script src="psfdb.js"></script>
+<script src="dist/psfdb.browser.js"></script>
 <script>
   // Available as a global variable
   const db = new PsfDB();
@@ -22,12 +22,13 @@ Load using `require`.
 
 ```bash
 # Copy file to your project
-cp psfdb.js your-project/
+cp dist/psfdb*.js your-project/
 ```
 
 ```javascript
 /* main.js */
-const PsfDB = require('./psfdb.js');
+const PsfDB = require('./dist/psfdb.cjs.js'); // For CommonJS
+// For ES Module: import PsfDB from './dist/psfdb.esm.js';
 const SemanticFingerprint = PsfDB.Fingerprint;
 
 // Usage
@@ -209,7 +210,7 @@ For detailed usage, refer to:
 
 1. **README.md** - Complete documentation
 2. **examples.js** - Various usage examples
-3. **psfdb.js** - Source code (with comments)
+3. **psfdb*.js** - Source code modules
 
 ## Troubleshooting
 

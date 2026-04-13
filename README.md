@@ -241,13 +241,13 @@ When handling large amounts of data, memory usage varies significantly depending
 
 ```bash
 # Download and place the file
-# Include psfdb.js in your project
+# Include the appropriate psfdb*.js in your project
 ```
 
 ### Browser Usage
 
 ```html
-<script src="psfdb.js"></script>
+<script src="dist/psfdb.browser.js"></script>
 <script>
   // PsfDB class becomes available
   const db = new PsfDB('MyDatabase');
@@ -257,7 +257,7 @@ When handling large amounts of data, memory usage varies significantly depending
 ### Node.js Usage
 
 ```javascript
-const PsfDB = require('./psfdb.js');
+const PsfDB = require('./dist/psfdb.cjs.js');
 const db = new PsfDB('MyDatabase');
 ```
 
@@ -266,14 +266,14 @@ const db = new PsfDB('MyDatabase');
 For modern bundlers (Webpack, Rollup, etc.) or direct browser imports:
 
 ```javascript
-import PsfDB from './psfdb.js';
+import PsfDB from './dist/psfdb.esm.js';
 
 // Usage example
 const db = new PsfDB('MyDatabase');
 await db.initialize();
 ```
 
-**Note**: `psfdb.js` is in UMD format and includes the SemanticFingerprint class. No need to import separately.
+**Note**: Available in the `dist` folder as ESM (`psfdb.esm.js`), CommonJS (`psfdb.cjs.js`), and Browser script (`psfdb.browser.js`). The original UMD format (`psfdb.js`) is also included in the root directory. All versions include the SemanticFingerprint class. No need to import separately.
 
 ### Basic Usage
 
@@ -565,18 +565,25 @@ const strictSearch = await db.search(query, { threshold: 0.8 });  // Strict
 const relaxedSearch = await db.search(query, { threshold: 0.3 }); // Relaxed
 ```
 
-### 2. Batch Processing
+### 2. Batch Processing and Memory Management for Large Data
+
+Registering hundreds of thousands of records in a continuous loop using `add` or `addBatch` may exhaust JavaScript memory (garbage collection) and cause the browser or process to crash. To prevent this, observe the following:
+
+1. **Use `addBatchAsync`**: It processes asynchronously while yielding to the event loop, preventing memory spikes.
+2. **Avoid massive strings (like Base64 images)**: PsfDB expands N-grams and features in memory. Exclude huge texts from the object to be indexed, or truncate them before adding.
 
 ```javascript
-// Add large amounts of data in chunks
-const batchSize = 100;
-for (let i = 0; i < documents.length; i += batchSize) {
-  const batch = documents.slice(i, i + batchSize);
-  await db.addBatch(batch);
-  
-  // Display progress
-  console.log(`${i + batch.length} / ${documents.length}`);
-}
+// ❌ Bad (Causes Memory Crash)
+// for (const doc of hugeArray) await db.add(doc);
+// await db.addBatch(hugeArray);
+
+// ✅ Good (Non-blocking Batch Add)
+await db.addBatchAsync(hugeArray, {
+  chunkSize: 50,  // Reduce to 10-20 if individual data items are large
+  onProgress: (done, total) => {
+    console.log(`${done} / ${total} processed`);
+  }
+});
 ```
 
 ### 3. Index Optimization

@@ -241,13 +241,13 @@ IndexedDBには以下の構造でデータが格納されます。
 
 ```bash
 # ファイルをダウンロードして配置
-# psfdb.js をプロジェクトに含めてください
+# 用途に合った psfdb*.js をプロジェクトに含めてください
 ```
 
 ### ブラウザでの使用
 
 ```html
-<script src="psfdb.js"></script>
+<script src="dist/psfdb.browser.js"></script>
 <script>
   // PsfDBクラスが利用可能になります
   const db = new PsfDB('MyDatabase');
@@ -257,7 +257,7 @@ IndexedDBには以下の構造でデータが格納されます。
 ### Node.jsでの使用
 
 ```javascript
-const PsfDB = require('./psfdb.js');
+const PsfDB = require('./dist/psfdb.cjs.js');
 const db = new PsfDB('MyDatabase');
 ```
 
@@ -266,14 +266,14 @@ const db = new PsfDB('MyDatabase');
 モダンなバンドラ（Webpack、Rollup等）またはブラウザでの直接importの場合：
 
 ```javascript
-import PsfDB from './psfdb.js';
+import PsfDB from './dist/psfdb.esm.js';
 
 // 使用例
 const db = new PsfDB('MyDatabase');
 await db.initialize();
 ```
 
-**注意**: `psfdb.js`はUMD形式で、SemanticFingerprintクラスも内包しています。個別にimportする必要はありません。
+**注意**: それぞれ `dist/` フォルダ内に、ESM用(`psfdb.esm.js`)、CommonJS用(`psfdb.cjs.js`)、ブラウザ用(`psfdb.browser.js`)があります。互換性のためのUMD形式(`psfdb.js`)もルートに同梱されています。いずれもSemanticFingerprintクラスを内包しています。個別にimportする必要はありません。
 
 ### 基本的な使い方
 
@@ -568,18 +568,25 @@ const strictSearch = await db.search(query, { threshold: 0.8 });  // 厳密
 const relaxedSearch = await db.search(query, { threshold: 0.3 }); // 緩い
 ```
 
-### 2. バッチ処理
+### 2. バッチ処理と大量データのメモリ管理
+
+数十万件以上の大量データをループで連続して `add` や `addBatch` で登録すると、JavaScriptのメモリ（ガベージコレクション）がパンクし、ブラウザやプロセスがクラッシュする可能性があります。これを防ぐために以下の点に注意してください。
+
+1. **`addBatchAsync` を使用する**: イベントループを開放しながら非同期に処理するため、メモリの急増を防ぎます。
+2. **巨大な文字列（Base64画像など）を避ける**: PsfDBは内部でテキストのN-gramや特徴量をメモリ展開します。検索対象としない巨大なテキストはインデックスの対象からあらかじめ除外するか、適度な長さに切り詰めてから登録してください。
 
 ```javascript
-// 大量データは分割して追加
-const batchSize = 100;
-for (let i = 0; i < documents.length; i += batchSize) {
-  const batch = documents.slice(i, i + batchSize);
-  await db.addBatch(batch);
-  
-  // 進捗表示
-  console.log(`${i + batch.length} / ${documents.length}`);
-}
+// ❌ 悪い例（メモリクラッシュの原因）
+// for (const doc of hugeArray) await db.add(doc);
+// await db.addBatch(hugeArray);
+
+// ✅ 良い例（ノンブロッキングな一括追加）
+await db.addBatchAsync(hugeArray, {
+  chunkSize: 50,  // データ1件が大きい場合は10〜20などに減らす
+  onProgress: (done, total) => {
+    console.log(`${done} / ${total} 完了`);
+  }
+});
 ```
 
 ### 3. インデックス最適化
